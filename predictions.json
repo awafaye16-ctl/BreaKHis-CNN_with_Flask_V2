@@ -1,0 +1,101 @@
+[
+  {
+    "id": 1775840182,
+    "filename": "1775840182_SOB_M_DC-14-2523-400-004.png",
+    "original_url": "/static/uploads/1775840182_SOB_M_DC-14-2523-400-004.png",
+    "heatmap_url": "/static/heatmaps/gradcam_1775840182_SOB_M_DC-14-2523-400-004.png",
+    "prediction": "B\u00e9nin",
+    "confidence": 0.7025485053961649,
+    "report": "RAPPORT M\u00c9DICAL - ANALYSE HISTOPATHOLOGIQUE\n\nR\u00c9SULTAT:\nDiagnostic: L\u00e9sion b\u00e9nigne du sein\nConfiance: 70.3%\nSeuil d\u00e9cision: 0.367\n\nSIGNIFICATION CLINIQUE:\nL'analyse par IA ne r\u00e9v\u00e8le pas de signes \u00e9vidents de malignit\u00e9. Les caract\u00e9ristiques cellulaires et architecturales observ\u00e9es sont compatibles avec une pathologie b\u00e9nigne du sein.\n\nRECOMMANDATION:\nSuivi r\u00e9gulier en s\u00e9nologie, mammographie de contr\u00f4le dans 6-12 mois, \u00e9chographie mammaire compl\u00e9mentaire si n\u00e9cessaire.",
+    "inference_time_ms": 1538.0995273590088,
+    "timestamp": "2026-04-10T16:56:34.800640",
+    "model_metrics": {
+      "threshold_used": 0.367,
+      "auc_roc": 0.9655,
+      "accuracy": 86.1,
+      "model_type": "ResNet-50 (R\u00e9el)"
+    }
+  },
+  {
+    "id": 1775838155,
+    "filename": "1775838155_SOB_M_DC-14-2523-400-004.png",
+    "original_url": "/static/uploads/1775838155_SOB_M_DC-14-2523-400-004.png",
+    "heatmap_url": "/static/heatmaps/gradcam_1775838155_SOB_M_DC-14-2523-400-004.png",
+    "prediction": "B\u00e9nin",
+    "confidence": 0.722593759945184,
+    "report": "RAPPORT M\u00c9DICAL - ANALYSE HISTOPATHOLOGIQUE\n\nR\u00c9SULTAT:\nDiagnostic: L\u00e9sion b\u00e9nigne du sein\nConfiance: 72.3%\nSeuil d\u00e9cision: 0.367\n\nSIGNIFICATION CLINIQUE:\nL'analyse par IA ne r\u00e9v\u00e8le pas de signes \u00e9vidents de malignit\u00e9. Les caract\u00e9ristiques cellulaires et architecturales observ\u00e9es sont compatibles avec une pathologie b\u00e9nigne du sein.\n\nRECOMMANDATION:\nSuivi r\u00e9gulier en s\u00e9nologie, mammographie de contr\u00f4le dans 6-12 mois, \u00e9chographie mammaire compl\u00e9mentaire si n\u00e9cessaire.",
+    "inference_time_ms": 2595.7350730895996,
+    "timestamp": "2026-04-10T16:22:49.133361",
+    "model_metrics": {
+      "threshold_used": 0.367,
+      "auc_roc": 0.9655,
+      "accuracy": 86.1,
+      "model_type": "ResNet-50 (R\u00e9el)"
+    }
+  },
+  {
+    "id": 1775837346,
+    "filename": "1775837346_SOB_M_DC-14-2523-400-004.png",
+    "original_url": "/static/uploads/1775837346_SOB_M_DC-14-2523-400-004.png",
+    "heatmap_url": "/static/heatmaps/gradcam_1775837346_SOB_M_DC-14-2523-400-004.png",
+    "prediction": "B\u00e9nin",
+    "confidence": 0.7042217639616287,
+    "report": "RAPPORT M\u00c9DICAL - ANALYSE HISTOPATHOLOGIQUE\n\nR\u00c9SULTAT:\nDiagnostic: L\u00e9sion b\u00e9nigne du sein\nConfiance: 70.4%\nSeuil d\u00e9cision: 0.367\n\nSIGNIFICATION CLINIQUE:\nL'analyse par IA ne r\u00e9v\u00e8le pas de signes \u00e9vidents de malignit\u00e9. Les caract\u00e9ristiques cellulaires et architecturales observ\u00e9es sont compatibles avec une pathologie b\u00e9nigne du sein.\n\nRECOMMANDATION:\nSuivi r\u00e9gulier en s\u00e9nologie, mammographie de contr\u00f4le dans 6-12 mois, \u00e9chographie mammaire compl\u00e9mentaire si n\u00e9cessaire.",
+    "inference_time_ms": 8523.972034454346,
+    "timestamp": "2026-04-10T16:09:20.643303",
+    "model_metrics": {
+      "threshold_used": 0.367,
+      "auc_roc": 0.9655,
+      "accuracy": 86.1,
+      "model_type": "ResNet-50 (R\u00e9el)"
+    }
+  },
+  {
+    "id": 1775836541,
+    "filename": "1775836541_SOB_M_DC-14-2523-400-004.png",
+    "original_url": "/static/uploads/1775836541_SOB_M_DC-14-2523-400-004.png",
+    "heatmap_url": "/static/heatmaps/heatmap_1775836541_SOB_M_DC-14-2523-400-004.png",
+    "prediction": "B\u00e9nin",
+    "confidence": 0.7168056806022288,
+    "report": "RAPPORT M\u00c9DICAL - ANALYSE HISTOPATHOLOGIQUE\n\nR\u00c9SULTAT:\nDiagnostic: L\u00e9sion b\u00e9nigne du sein\nConfiance: 28.3%\nSeuil d\u00e9cision: 0.367\n\nSIGNIFICATION CLINIQUE:\nL'analyse ne r\u00e9v\u00e8le pas de signes \u00e9vidents de malignit\u00e9. Les caract\u00e9ristiques cellulaires \net architecturales observ\u00e9es sont compatibles avec une pathologie b\u00e9nigne du sein \n(hyperplasie, ad\u00e9nose, ou autre l\u00e9sion non maligne).\n\nRECOMMANDATION:\nSuivi r\u00e9gulier en s\u00e9nologie\nMammographie de contr\u00f4le dans 6-12 mois\n\u00c9chographie mammaire compl\u00e9mentaire si n\u00e9cessaire\nMaintien d'une surveillance clinique r\u00e9guli\u00e8re\n\nPERFORMANCES DU MOD\u00c8LE:\nAUC-ROC: 0.9655\nSp\u00e9cificit\u00e9 (recall b\u00e9nin): 82.3%\nPr\u00e9cision: 84.7%",
+    "inference_time_ms": 28298.032522201538,
+    "timestamp": "2026-04-10T15:56:16.085431",
+    "model_metrics": {
+      "threshold_used": 0.367,
+      "auc_roc": 0.9655,
+      "accuracy": 86.1
+    }
+  },
+  {
+    "id": 1775834979,
+    "filename": "1775834979_SOB_M_DC-14-2523-400-004.png",
+    "original_url": "/static/uploads/1775834979_SOB_M_DC-14-2523-400-004.png",
+    "heatmap_url": "/static/heatmaps/heatmap_1775834979_SOB_M_DC-14-2523-400-004.png",
+    "prediction": "B\u00e9nin",
+    "confidence": 0.6859366252462906,
+    "report": "RAPPORT M\u00c9DICAL - ANALYSE HISTOPATHOLOGIQUE\n\nR\u00c9SULTAT:\nDiagnostic: L\u00e9sion b\u00e9nigne du sein\nConfiance: 31.4%\nSeuil d\u00e9cision: 0.367\n\nSIGNIFICATION CLINIQUE:\nL'analyse ne r\u00e9v\u00e8le pas de signes \u00e9vidents de malignit\u00e9. Les caract\u00e9ristiques cellulaires \net architecturales observ\u00e9es sont compatibles avec une pathologie b\u00e9nigne du sein \n(hyperplasie, ad\u00e9nose, ou autre l\u00e9sion non maligne).\n\nRECOMMANDATION:\nSuivi r\u00e9gulier en s\u00e9nologie\nMammographie de contr\u00f4le dans 6-12 mois\n\u00c9chographie mammaire compl\u00e9mentaire si n\u00e9cessaire\nMaintien d'une surveillance clinique r\u00e9guli\u00e8re\n\nPERFORMANCES DU MOD\u00c8LE:\nAUC-ROC: 0.9655\nSp\u00e9cificit\u00e9 (recall b\u00e9nin): 82.3%\nPr\u00e9cision: 84.7%",
+    "inference_time_ms": 198.59838485717773,
+    "timestamp": "2026-04-10T15:29:44.633704",
+    "model_metrics": {
+      "threshold_used": 0.367,
+      "auc_roc": 0.9655,
+      "accuracy": 86.1
+    }
+  },
+  {
+    "id": 1775834268,
+    "filename": "1775834268_SOB_M_DC-14-2523-400-004.png",
+    "original_url": "/static/uploads/1775834268_SOB_M_DC-14-2523-400-004.png",
+    "heatmap_url": "/static/heatmaps/heatmap_1775834268_SOB_M_DC-14-2523-400-004.png",
+    "prediction": "B\u00e9nin",
+    "confidence": 0.7109339038791768,
+    "report": "RAPPORT M\u00c9DICAL - ANALYSE HISTOPATHOLOGIQUE\n\nR\u00c9SULTAT:\nDiagnostic: L\u00e9sion b\u00e9nigne du sein\nConfiance: 28.9%\nSeuil d\u00e9cision: 0.367\n\nSIGNIFICATION CLINIQUE:\nL'analyse ne r\u00e9v\u00e8le pas de signes \u00e9vidents de malignit\u00e9. Les caract\u00e9ristiques cellulaires \net architecturales observ\u00e9es sont compatibles avec une pathologie b\u00e9nigne du sein \n(hyperplasie, ad\u00e9nose, ou autre l\u00e9sion non maligne).\n\nRECOMMANDATION:\nSuivi r\u00e9gulier en s\u00e9nologie\nMammographie de contr\u00f4le dans 6-12 mois\n\u00c9chographie mammaire compl\u00e9mentaire si n\u00e9cessaire\nMaintien d'une surveillance clinique r\u00e9guli\u00e8re\n\nPERFORMANCES DU MOD\u00c8LE:\nAUC-ROC: 0.9655\nSp\u00e9cificit\u00e9 (recall b\u00e9nin): 82.3%\nPr\u00e9cision: 84.7%",
+    "inference_time_ms": 48601.00483894348,
+    "timestamp": "2026-04-10T15:18:42.999012",
+    "model_metrics": {
+      "threshold_used": 0.367,
+      "auc_roc": 0.9655,
+      "accuracy": 86.1
+    }
+  }
+]

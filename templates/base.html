@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Lafayette Medical AI{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .card-glass {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .loading-spinner {
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 3px solid white;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .metric-card {
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .metric-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen text-white">
+    <!-- Navigation -->
+    <nav class="bg-white/10 backdrop-blur-md border-b border-white/20">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-2">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    <span class="text-xl font-bold">Lafayette Medical AI</span>
+                </div>
+                <div class="flex space-x-6">
+                    <a href="/" class="hover:text-blue-200 transition">Analyse</a>
+                    <a href="/dashboard" class="hover:text-blue-200 transition">Tableau de bord</a>
+                    <a href="/history" class="hover:text-blue-200 transition">Historique</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="mt-16 bg-white/10 backdrop-blur-md border-t border-white/20">
+        <div class="container mx-auto px-4 py-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div>
+                    <h3 class="font-semibold mb-4">Modèle</h3>
+                    <p class="text-sm opacity-80">ResNet-50</p>
+                    <p class="text-sm opacity-80">Dataset: BreaKHis</p>
+                    <p class="text-sm opacity-80">AUC: 0.9655</p>
+                </div>
+                <div>
+                    <h3 class="font-semibold mb-4">Performance</h3>
+                    <p class="text-sm opacity-80">Accuracy: 86.1%</p>
+                    <p class="text-sm opacity-80">Sensibilité: 90.4%</p>
+                    <p class="text-sm opacity-80">Spécificité: 82.3%</p>
+                </div>
+                <div>
+                    <h3 class="font-semibold mb-4">Technologie</h3>
+                    <p class="text-sm opacity-80">Python + Flask</p>
+                    <p class="text-sm opacity-80">PyTorch + Grad-CAM</p>
+                    <p class="text-sm opacity-80">Groq LLM</p>
+                </div>
+            </div>
+            <div class="mt-8 pt-8 border-t border-white/20 text-center">
+                <p class="text-sm opacity-60">&copy; 2024 Lafayette Medical AI. Outil d'aide au diagnostic - Usage recherche uniquement.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Fonctions utilitaires
+        function showLoading(element) {
+            element.innerHTML = '<div class="loading-spinner mx-auto"></div><p class="mt-4">Analyse en cours...</p>';
+        }
+        
+        function hideLoading(element, content) {
+            element.innerHTML = content;
+        }
+        
+        function formatConfidence(confidence) {
+            return (confidence * 100).toFixed(1) + '%';
+        }
+        
+        function formatDate(timestamp) {
+            return new Date(timestamp).toLocaleString('fr-FR');
+        }
+    </script>
+    
+    {% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,210 @@
+{% extends "base.html" %}
+
+{% block title %}Lafayette Medical AI - Analyse{% endblock %}
+
+{% block content %}
+<div class="text-center mb-12">
+    <h1 class="text-5xl font-bold mb-4">Analyse Histopathologique</h1>
+    <p class="text-xl opacity-90">Intelligence Artificielle pour la détection du cancer du sein</p>
+    <div class="mt-4 flex justify-center gap-4 text-sm">
+        <span class="px-3 py-1 bg-white/20 rounded">{{ metrics.model_type }}</span>
+        <span class="px-3 py-1 bg-white/20 rounded">AUC: {{ "%.4f"|format(metrics.auc_roc) }}</span>
+        <span class="px-3 py-1 bg-white/20 rounded">Accuracy: {{ "%.1f"|format(metrics.accuracy) }}%</span>
+        <span class="px-3 py-1 bg-green-500/30 rounded">Flask + PyTorch</span>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <!-- Upload Section -->
+    <section class="card-glass rounded-xl p-8">
+        <h2 class="text-2xl font-semibold mb-6">Télécharger l'image</h2>
+        
+        <form id="uploadForm" enctype="multipart/form-data" class="space-y-6">
+            <div>
+                <label for="imageUpload" class="block">
+                    <div id="dropZone" class="border-2 border-dashed border-white/30 rounded-lg p-8 text-center cursor-pointer hover:border-white/50 transition">
+                        <svg class="w-12 h-12 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                        </svg>
+                        <p class="mb-2">Cliquez ou glissez-déposez une image</p>
+                        <p class="text-sm opacity-70">PNG, JPG, JPEG (max 16MB)</p>
+                        <input type="file" id="imageUpload" name="image" accept=".png,.jpg,.jpeg" class="hidden">
+                    </div>
+                </label>
+            </div>
+
+            <div id="imagePreview" class="hidden">
+                <img id="previewImg" class="w-full rounded-lg shadow-lg" alt="Preview">
+                <button type="submit" class="w-full mt-4 bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg font-semibold transition">
+                    <span id="analyzeBtn">Analyser l'image</span>
+                </button>
+            </div>
+        </form>
+
+        <div id="loadingSection" class="hidden text-center py-8">
+            <div class="loading-spinner mx-auto mb-4"></div>
+            <p>Analyse en cours...</p>
+            <p class="text-sm opacity-70">ResNet-50 + Grad-CAM + Groq LLM</p>
+        </div>
+    </section>
+
+    <!-- Results Section -->
+    <section class="card-glass rounded-xl p-8">
+        <h2 class="text-2xl font-semibold mb-6">Résultats</h2>
+        
+        <div id="resultsSection" class="hidden space-y-6">
+            <!-- Prediction Result -->
+            <div class="p-4 bg-white/10 rounded-lg">
+                <h3 class="font-semibold mb-2">Diagnostic</h3>
+                <div id="predictionResult" class="text-2xl font-bold"></div>
+                <div id="confidenceScore" class="text-sm opacity-70 mt-1"></div>
+                <div id="inferenceTime" class="text-sm opacity-70"></div>
+            </div>
+
+            <!-- Heatmap -->
+            <div id="heatmapSection" class="hidden">
+                <h3 class="font-semibold mb-2">Grad-CAM Heatmap</h3>
+                <img id="heatmapImg" class="w-full rounded-lg shadow-lg" alt="Heatmap">
+                <p class="text-sm opacity-70 mt-2">Visualisation des zones d'attention du modèle</p>
+            </div>
+
+            <!-- Medical Report -->
+            <div>
+                <h3 class="font-semibold mb-2">Rapport Médical</h3>
+                <div id="medicalReport" class="text-sm leading-relaxed p-4 bg-white/5 rounded-lg"></div>
+            </div>
+
+            <!-- Model Info -->
+            <div class="p-4 bg-white/5 rounded-lg">
+                <h3 class="font-semibold mb-2">Informations du Modèle</h3>
+                <div class="grid grid-cols-2 gap-2 text-sm">
+                    <div>Seuil utilisé: <span class="font-bold">{{ "%.3f"|format(metrics.threshold) }}</span></div>
+                    <div>AUC-ROC: <span class="font-bold">{{ "%.4f"|format(metrics.auc_roc) }}</span></div>
+                    <div>Sensibilité: <span class="font-bold">{{ "%.1f"|format(metrics.sensitivity) }}%</span></div>
+                    <div>Spécificité: <span class="font-bold">{{ "%.1f"|format(metrics.specificity) }}%</span></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="noResults" class="text-center py-12 opacity-70">
+            <svg class="w-16 h-16 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+            <p>Aucun résultat</p>
+            <p class="text-sm">Téléchargez une image pour commencer l'analyse</p>
+        </div>
+    </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// DOM Elements
+const uploadForm = document.getElementById('uploadForm');
+const imageUpload = document.getElementById('imageUpload');
+const dropZone = document.getElementById('dropZone');
+const imagePreview = document.getElementById('imagePreview');
+const previewImg = document.getElementById('previewImg');
+const loadingSection = document.getElementById('loadingSection');
+const resultsSection = document.getElementById('resultsSection');
+const noResults = document.getElementById('noResults');
+
+// Drag and Drop
+dropZone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dropZone.classList.add('border-white');
+});
+
+dropZone.addEventListener('dragleave', () => {
+    dropZone.classList.remove('border-white');
+});
+
+dropZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropZone.classList.remove('border-white');
+    
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+        imageUpload.files = files;
+        handleFileSelect();
+    }
+});
+
+// File Upload
+imageUpload.addEventListener('change', handleFileSelect);
+
+function handleFileSelect() {
+    const file = imageUpload.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            previewImg.src = e.target.result;
+            imagePreview.classList.remove('hidden');
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+// Form Submit
+uploadForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const file = imageUpload.files[0];
+    if (!file) return;
+
+    // Show loading
+    loadingSection.classList.remove('hidden');
+    resultsSection.classList.add('hidden');
+    noResults.classList.add('hidden');
+
+    // Create FormData
+    const formData = new FormData();
+    formData.append('image', file);
+
+    try {
+        const response = await fetch('/api/predict', {
+            method: 'POST',
+            body: formData
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+            displayResults(result);
+        } else {
+            alert(`Erreur: ${result.error}`);
+        }
+    } catch (error) {
+        alert(`Erreur de connexion: ${error.message}`);
+    } finally {
+        loadingSection.classList.add('hidden');
+    }
+});
+
+// Display Results
+function displayResults(result) {
+    // Prediction
+    const predictionEl = document.getElementById('predictionResult');
+    const confidenceEl = document.getElementById('confidenceScore');
+    const timeEl = document.getElementById('inferenceTime');
+    
+    predictionEl.textContent = result.prediction;
+    predictionEl.className = result.prediction === 'Malin' ? 'text-red-400' : 'text-green-400';
+    confidenceEl.textContent = `Confiance: ${formatConfidence(result.confidence)}`;
+    timeEl.textContent = `Temps d'inférence: ${result.inference_time_ms.toFixed(0)}ms`;
+
+    // Heatmap
+    if (result.heatmap_url) {
+        document.getElementById('heatmapImg').src = result.heatmap_url;
+        document.getElementById('heatmapSection').classList.remove('hidden');
+    }
+
+    // Medical Report
+    document.getElementById('medicalReport').textContent = result.report;
+
+    // Show results
+    resultsSection.classList.remove('hidden');
+    noResults.classList.add('hidden');
+}
+</script>
+{% endblock %}

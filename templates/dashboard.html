@@ -1,0 +1,266 @@
+{% extends "base.html" %}
+
+{% block title %}Lafayette Medical AI - Tableau de bord{% endblock %}
+
+{% block content %}
+<div class="text-center mb-12">
+    <h1 class="text-5xl font-bold mb-4">Tableau de Bord</h1>
+    <p class="text-xl opacity-90">Métriques de performance et analyse du modèle</p>
+</div>
+
+<!-- Performance Overview -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+    <div class="metric-card card-glass rounded-xl p-6 text-center">
+        <div class="text-3xl font-bold text-blue-400">{{ "%.1f"|format(metrics.accuracy) }}%</div>
+        <div class="text-sm opacity-70 mt-2">Accuracy</div>
+        <div class="text-xs opacity-50 mt-1">{{ metrics.confidence_intervals.accuracy[0] }}% - {{ metrics.confidence_intervals.accuracy[1] }}%</div>
+    </div>
+    
+    <div class="metric-card card-glass rounded-xl p-6 text-center">
+        <div class="text-3xl font-bold text-green-400">{{ "%.4f"|format(metrics.auc_roc) }}</div>
+        <div class="text-sm opacity-70 mt-2">AUC-ROC</div>
+        <div class="text-xs opacity-50 mt-1">{{ metrics.confidence_intervals.auc_roc[0] }} - {{ metrics.confidence_intervals.auc_roc[1] }}</div>
+    </div>
+    
+    <div class="metric-card card-glass rounded-xl p-6 text-center">
+        <div class="text-3xl font-bold text-yellow-400">{{ "%.1f"|format(metrics.sensitivity) }}%</div>
+        <div class="text-sm opacity-70 mt-2">Sensibilité</div>
+        <div class="text-xs opacity-50 mt-1">Recall malin</div>
+    </div>
+    
+    <div class="metric-card card-glass rounded-xl p-6 text-center">
+        <div class="text-3xl font-bold text-purple-400">{{ "%.1f"|format(metrics.specificity) }}%</div>
+        <div class="text-sm opacity-70 mt-2">Spécificité</div>
+        <div class="text-xs opacity-50 mt-1">Recall bénin</div>
+    </div>
+</div>
+
+<!-- Charts Section -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+    <!-- Performance Chart -->
+    <div class="card-glass rounded-xl p-8">
+        <h2 class="text-2xl font-semibold mb-6">Performance du Modèle</h2>
+        <canvas id="performanceChart"></canvas>
+    </div>
+    
+    <!-- K-Fold Results -->
+    <div class="card-glass rounded-xl p-8">
+        <h2 class="text-2xl font-semibold mb-6">Résultats K-Fold (5 folds)</h2>
+        <canvas id="kfoldChart"></canvas>
+    </div>
+</div>
+
+<!-- Detailed Metrics -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+    <!-- Model Info -->
+    <div class="card-glass rounded-xl p-8">
+        <h2 class="text-2xl font-semibold mb-6">Informations du Modèle</h2>
+        <div class="space-y-4">
+            <div class="flex justify-between">
+                <span class="opacity-70">Architecture:</span>
+                <span class="font-semibold">{{ metrics.model_type }}</span>
+            </div>
+            <div class="flex justify-between">
+                <span class="opacity-70">Dataset:</span>
+                <span class="font-semibold">{{ metrics.dataset }}</span>
+            </div>
+            <div class="flex justify-between">
+                <span class="opacity-70">Total échantillons:</span>
+                <span class="font-semibold">{{ metrics.total_samples }}</span>
+            </div>
+            <div class="flex justify-between">
+                <span class="opacity-70">Échantillons training:</span>
+                <span class="font-semibold">{{ metrics.training_samples }}</span>
+            </div>
+            <div class="flex justify-between">
+                <span class="opacity-70">Échantillons test:</span>
+                <span class="font-semibold">{{ metrics.test_samples }}</span>
+            </div>
+            <div class="flex justify-between">
+                <span class="opacity-70">K-Fold folds:</span>
+                <span class="font-semibold">{{ metrics.cross_validation_folds }}</span>
+            </div>
+            <div class="flex justify-between">
+                <span class="opacity-70">Seuil optimal:</span>
+                <span class="font-semibold">{{ "%.3f"|format(metrics.threshold) }}</span>
+            </div>
+            <div class="flex justify-between">
+                <span class="opacity-70">Temps d'inférence:</span>
+                <span class="font-semibold">{{ metrics.inference_time_ms }}ms</span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Confidence Intervals -->
+    <div class="card-glass rounded-xl p-8">
+        <h2 class="text-2xl font-semibold mb-6">Intervalles de Confiance (95%)</h2>
+        <canvas id="confidenceChart"></canvas>
+    </div>
+</div>
+
+<!-- Dataset Distribution -->
+<div class="card-glass rounded-xl p-8">
+    <h2 class="text-2xl font-semibold mb-6">Distribution du Dataset BreaKHis</h2>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div>
+            <canvas id="distributionChart"></canvas>
+        </div>
+        <div class="space-y-4">
+            <h3 class="text-xl font-semibold">Statistiques du Dataset</h3>
+            <div class="space-y-3">
+                <div class="p-3 bg-white/5 rounded-lg">
+                    <div class="flex justify-between">
+                        <span>Images bénignes:</span>
+                        <span class="font-semibold">547 (32%)</span>
+                    </div>
+                </div>
+                <div class="p-3 bg-white/5 rounded-lg">
+                    <div class="flex justify-between">
+                        <span>Images malignes:</span>
+                        <span class="font-semibold">1,146 (68%)</span>
+                    </div>
+                </div>
+                <div class="p-3 bg-white/5 rounded-lg">
+                    <div class="flex justify-between">
+                        <span>Total images:</span>
+                        <span class="font-semibold">1,693</span>
+                    </div>
+                </div>
+                <div class="p-3 bg-white/5 rounded-lg">
+                    <div class="flex justify-between">
+                        <span>Coloration:</span>
+                        <span class="font-semibold">H&E</span>
+                    </div>
+                </div>
+                <div class="p-3 bg-white/5 rounded-lg">
+                    <div class="flex justify-between">
+                        <span>Agrandissement:</span>
+                        <span class="font-semibold">400x</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Performance Chart
+const performanceCtx = document.getElementById('performanceChart').getContext('2d');
+new Chart(performanceCtx, {
+    type: 'radar',
+    data: {
+        labels: ['Accuracy', 'AUC-ROC', 'Sensibilité', 'Spécificité', 'Précision'],
+        datasets: [{
+            label: 'Performance',
+            data: [{{ metrics.accuracy }}, {{ metrics.auc_roc * 100 }}, {{ metrics.sensitivity }}, {{ metrics.specificity }}, {{ metrics.precision }}],
+            backgroundColor: 'rgba(102, 126, 234, 0.2)',
+            borderColor: 'rgba(102, 126, 234, 1)',
+            borderWidth: 2
+        }]
+    },
+    options: {
+        responsive: true,
+        scales: {
+            r: {
+                beginAtZero: true,
+                max: 100
+            }
+        }
+    }
+});
+
+// K-Fold Chart
+const kfoldCtx = document.getElementById('kfoldChart').getContext('2d');
+new Chart(kfoldCtx, {
+    type: 'line',
+    data: {
+        labels: ['Fold 1', 'Fold 2', 'Fold 3', 'Fold 4', 'Fold 5'],
+        datasets: [{
+            label: 'Accuracy',
+            data: [{% for fold in kfold_results.fold_results %}{{ fold.accuracy }}{% if not loop.last %},{% endif %}{% endfor %}],
+            borderColor: 'rgba(102, 126, 234, 1)',
+            backgroundColor: 'rgba(102, 126, 234, 0.1)',
+            tension: 0.4
+        }, {
+            label: 'AUC-ROC',
+            data: [{% for fold in kfold_results.fold_results %}{{ fold.auc_roc * 100 }}{% if not loop.last %},{% endif %}{% endfor %}],
+            borderColor: 'rgba(118, 75, 162, 1)',
+            backgroundColor: 'rgba(118, 75, 162, 0.1)',
+            tension: 0.4
+        }]
+    },
+    options: {
+        responsive: true,
+        scales: {
+            y: {
+                beginAtZero: false,
+                min: 80,
+                max: 100
+            }
+        }
+    }
+});
+
+// Confidence Intervals Chart
+const confidenceCtx = document.getElementById('confidenceChart').getContext('2d');
+new Chart(confidenceCtx, {
+    type: 'bar',
+    data: {
+        labels: ['Accuracy', 'AUC-ROC', 'Sensibilité', 'Spécificité'],
+        datasets: [{
+            label: 'Performance',
+            data: [{{ metrics.accuracy }}, {{ metrics.auc_roc * 100 }}, {{ metrics.sensitivity }}, {{ metrics.specificity }}],
+            backgroundColor: [
+                'rgba(102, 126, 234, 0.8)',
+                'rgba(118, 75, 162, 0.8)',
+                'rgba(255, 193, 7, 0.8)',
+                'rgba(156, 39, 176, 0.8)'
+            ]
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                display: false
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: false,
+                min: 75,
+                max: 100
+            }
+        }
+    }
+});
+
+// Distribution Chart
+const distributionCtx = document.getElementById('distributionChart').getContext('2d');
+new Chart(distributionCtx, {
+    type: 'doughnut',
+    data: {
+        labels: ['Bénin', 'Malin'],
+        datasets: [{
+            data: [32, 68],
+            backgroundColor: [
+                'rgba(34, 197, 94, 0.8)',
+                'rgba(239, 68, 68, 0.8)'
+            ],
+            borderWidth: 2,
+            borderColor: '#fff'
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        }
+    }
+});
+</script>
+{% endblock %}

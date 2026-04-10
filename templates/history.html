@@ -1,0 +1,249 @@
+{% extends "base.html" %}
+
+{% block title %}Lafayette Medical AI - Historique{% endblock %}
+
+{% block content %}
+<div class="text-center mb-12">
+    <h1 class="text-5xl font-bold mb-4">Historique des Analyses</h1>
+    <p class="text-xl opacity-90">Consultez vos précédentes analyses histopathologiques</p>
+</div>
+
+<!-- Actions -->
+<div class="card-glass rounded-xl p-6 mb-8">
+    <div class="flex justify-between items-center">
+        <div class="flex items-center space-x-4">
+            <span class="text-sm opacity-70">{{ predictions|length }} analyse{{ 's' if predictions|length != 1 else '' }}</span>
+            <button id="refreshBtn" class="text-sm bg-white/20 px-4 py-2 rounded hover:bg-white/30 transition">
+                Actualiser
+            </button>
+        </div>
+        <div class="flex items-center space-x-4">
+            <input type="text" id="searchInput" placeholder="Rechercher..." class="px-4 py-2 rounded bg-white/10 border border-white/20 focus:outline-none focus:border-white/40">
+            <button id="exportBtn" class="text-sm bg-green-600 hover:bg-green-700 px-4 py-2 rounded transition">
+                Exporter CSV
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Predictions List -->
+<div class="card-glass rounded-xl p-8">
+    <div id="predictionsList">
+        {% if predictions %}
+            <div class="space-y-4">
+                {% for prediction in predictions %}
+                <div class="prediction-item border border-white/20 rounded-lg p-6 hover:bg-white/5 transition">
+                    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                        <!-- Image Preview -->
+                        <div class="lg:col-span-1">
+                            <img src="{{ prediction.original_url }}" alt="{{ prediction.filename }}" class="w-full h-32 object-cover rounded-lg">
+                        </div>
+                        
+                        <!-- Prediction Info -->
+                        <div class="lg:col-span-2 space-y-2">
+                            <div class="flex items-center space-x-3">
+                                <span class="font-semibold text-lg">{{ prediction.prediction }}</span>
+                                <span class="px-2 py-1 rounded text-xs {% if prediction.prediction == 'Malin' %}bg-red-500/30 text-red-300{% else %}bg-green-500/30 text-green-300{% endif %}">
+                                    {{ (prediction.confidence * 100)|round(1) }}%
+                                </span>
+                            </div>
+                            <div class="text-sm opacity-70">
+                                <p>Fichier: {{ prediction.filename }}</p>
+                                <p>Date: {{ prediction.timestamp[:10] }} {{ prediction.timestamp[11:19] }}</p>
+                                <p>Temps: {{ prediction.inference_time_ms|round(0) }}ms</p>
+                            </div>
+                            <div class="text-sm">
+                                <p class="font-semibold mb-1">Rapport médical:</p>
+                                <p class="opacity-80 line-clamp-2">{{ prediction.report[:200] }}{% if prediction.report|length > 200 %}...{% endif %}</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Actions -->
+                        <div class="lg:col-span-1 flex flex-col justify-between">
+                            <div class="space-y-2">
+                                {% if prediction.heatmap_url %}
+                                <a href="{{ prediction.heatmap_url }}" target="_blank" class="text-sm bg-blue-600 hover:bg-blue-700 px-3 py-2 rounded text-center block transition">
+                                    Voir Heatmap
+                                </a>
+                                {% endif %}
+                                <button class="view-details text-sm bg-white/20 hover:bg-white/30 px-3 py-2 rounded transition" data-id="{{ prediction.id }}">
+                                    Détails
+                                </button>
+                            </div>
+                            <div class="text-xs opacity-50">
+                                ID: {{ prediction.id }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="text-center py-16 opacity-70">
+                <svg class="w-16 h-16 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+                <p class="text-xl mb-2">Aucune analyse</p>
+                <p class="text-sm">Commencez par analyser une image histopathologique</p>
+                <a href="/" class="inline-block mt-4 bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded-lg transition">
+                    Nouvelle analyse
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Modal for Details -->
+<div id="detailsModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+    <div class="card-glass rounded-xl p-8 max-w-4xl max-h-[90vh] overflow-y-auto m-4">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-semibold">Détails de l'Analyse</h2>
+            <button id="closeModal" class="text-white/70 hover:text-white">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+        <div id="modalContent">
+            <!-- Content will be loaded here -->
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const predictions = {{ predictions|tojson }};
+const searchInput = document.getElementById('searchInput');
+const refreshBtn = document.getElementById('refreshBtn');
+const exportBtn = document.getElementById('exportBtn');
+const detailsModal = document.getElementById('detailsModal');
+const modalContent = document.getElementById('modalContent');
+const closeModal = document.getElementById('closeModal');
+
+// Search functionality
+searchInput.addEventListener('input', (e) => {
+    const searchTerm = e.target.value.toLowerCase();
+    const items = document.querySelectorAll('.prediction-item');
+    
+    items.forEach(item => {
+        const text = item.textContent.toLowerCase();
+        if (text.includes(searchTerm)) {
+            item.style.display = 'block';
+        } else {
+            item.style.display = 'none';
+        }
+    });
+});
+
+// Refresh
+refreshBtn.addEventListener('click', () => {
+    window.location.reload();
+});
+
+// Export CSV
+exportBtn.addEventListener('click', async () => {
+    try {
+        const response = await fetch('/api/export');
+        if (response.ok) {
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'predictions.csv';
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+    } catch (error) {
+        alert('Erreur lors de l\'export');
+    }
+});
+
+// View Details
+document.querySelectorAll('.view-details').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+        const id = e.target.dataset.id;
+        const prediction = predictions.find(p => p.id == id);
+        
+        if (prediction) {
+            modalContent.innerHTML = `
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div>
+                        <h3 class="text-xl font-semibold mb-4">Image Originale</h3>
+                        <img src="${prediction.original_url}" alt="${prediction.filename}" class="w-full rounded-lg">
+                        ${prediction.heatmap_url ? `
+                        <h3 class="text-xl font-semibold mb-4 mt-6">Grad-CAM Heatmap</h3>
+                        <img src="${prediction.heatmap_url}" alt="Heatmap" class="w-full rounded-lg">
+                        ` : ''}
+                    </div>
+                    <div class="space-y-6">
+                        <div>
+                            <h3 class="text-xl font-semibold mb-4">Diagnostic</h3>
+                            <div class="space-y-2">
+                                <div class="flex justify-between">
+                                    <span>Résultat:</span>
+                                    <span class="font-bold ${prediction.prediction === 'Malin' ? 'text-red-400' : 'text-green-400'}">${prediction.prediction}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span>Confiance:</span>
+                                    <span class="font-bold">${formatConfidence(prediction.confidence)}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span>Temps d'inférence:</span>
+                                    <span class="font-bold">${prediction.inference_time_ms.toFixed(0)}ms</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span>Date:</span>
+                                    <span class="font-bold">${formatDate(prediction.timestamp)}</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <h3 class="text-xl font-semibold mb-4">Métriques du Modèle</h3>
+                            <div class="space-y-2 text-sm">
+                                <div class="flex justify-between">
+                                    <span>Seuil utilisé:</span>
+                                    <span class="font-bold">${prediction.model_metrics.threshold_used}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span>AUC-ROC:</span>
+                                    <span class="font-bold">${prediction.model_metrics.auc_roc}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span>Accuracy:</span>
+                                    <span class="font-bold">${prediction.model_metrics.accuracy}%</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <h3 class="text-xl font-semibold mb-4">Rapport Médical Complet</h3>
+                            <div class="text-sm leading-relaxed p-4 bg-white/5 rounded-lg">
+                                ${prediction.report}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            detailsModal.classList.remove('hidden');
+            detailsModal.classList.add('flex');
+        }
+    });
+});
+
+// Close Modal
+closeModal.addEventListener('click', () => {
+    detailsModal.classList.add('hidden');
+    detailsModal.classList.remove('flex');
+});
+
+detailsModal.addEventListener('click', (e) => {
+    if (e.target === detailsModal) {
+        detailsModal.classList.add('hidden');
+        detailsModal.classList.remove('flex');
+    }
+});
+</script>
+{% endblock %}
