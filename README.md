@@ -1,161 +1,16 @@
+# Lafayette Medical AI
 
-## Auteure
+Application de classification histopathologique du cancer du sein avec **PyTorch réel**, **Grad-CAM véritable** et le modèle **best_model_resnet50_v2**.
 
-| Champ | Information |
-|-------|-------------|
-| **Nom** | Awa FAYE |
-| **Etablissement** | Universite Iba Der THIAM de Thies |
-| **Formation** | UFR SES/SET — Master SDA (Option IA) |
-| **Annee academique** | 2025-2026 |
-| **Email** | awa.faye16@univ-thies.sn |
-| **GitHub** | [awafaye16-ctl](https://github.com/awafaye16-ctl) |
+> **Précision. Interprétabilité. Soins.**
 
 ---
 
+## Auteur
+
+**Awa FAYE** - Master SDA (Option IA) - Université Iba Der THIAM de Thies - 2025-2026
 
 ---
-
-## 1. Presentation du projet
-
-**Lafayette Medical AI** est une application web complete developpee avec
-**Flask (Python)** pour la classification histopathologique du cancer du sein.
-Elle integre un modele deep learning **ResNet-50**, une visualisation
-**Grad-CAM** et une generation de rapports medicaux automatiques via
-**Groq API (Llama 3.1 70B)** — entierement gratuit.
-
-### Pourquoi Flask ?
-
-Flask a ete choisi pour 3 raisons fondamentales :
-
-**1. Integration native avec PyTorch**
-Flask et PyTorch sont tous les deux en Python. Le modele `model.pth` est
-charge directement dans `app.py` sans aucune couche intermediaire. Pas
-besoin de microservice separe, pas de communication inter-processus.
-
-**2. Simplicite de developpement**
-En Flask, une route s'ecrit en 5 lignes. L'ensemble de la logique
-(chargement modele, prediction, Grad-CAM, LLM, sauvegarde) est dans
-un seul fichier `app.py` de ~350 lignes, facilement maintenable.
-
-**3. Deploiement simple**
-Une seule commande `python app.py` lance l'application complete.
-Le deploiement Docker se fait avec un seul `Dockerfile` et une seule
-image contenant Python + PyTorch + Flask.
-
-### Contexte medical
-
-Le cancer du sein est la premiere cause de mortalite feminine par cancer
-dans le monde. L'analyse histopathologique manuelle est longue, subjective
-et dependante de la disponibilite d'un pathologiste expert. Ce systeme :
-
-- **Classifie** automatiquement les images de tissu mammaire H&E
-- **Interprete** ses decisions via Grad-CAM (zones actives visualisees)
-- **Communique** les resultats en langage naturel (rapports LLM)
-- **Reproduit** ses performances (validation K-Fold rigoureuse)
-
-### Dataset BreaKHis 400x
-
-| Propriete | Valeur |
-|-----------|--------|
-| Magnification | 400x |
-| Images benignes | 547 (32%) |
-| Images malignes | 1 146 (68%) |
-| Total | 1 693 images |
-| Coloration | Hematoxyline & Eosine (H&E) |
-| Train+Val | 1 354 images (K-Fold) |
-| Test set isole | 339 images (jamais vues) |
-
----
-
-## 2. Fonctionnalites
-
-### F1 — Classification IA avec TTA (Test-Time Augmentation)
-
-**Qu'est-ce que c'est ?**
-La prediction utilise le modele ResNet-50 entraine sur BreaKHis 400x.
-Pour ameliorer la stabilite, on utilise le TTA : au lieu d'une seule
-prediction, on genere 10 versions legerement differentes de l'image
-(recadrages et retournements aleatoires) et on moyenne les probabilites.
-
-**Pourquoi TTA ?**
-Sans TTA, une image cadrée légèrement différemment peut donner
-51% malin vs 49% benin — une prediction instable. Avec TTA (10
-augmentations), la variance est reduite d'un facteur sqrt(10) = 3.16x.
-
-**Seuil optimise 0.367 (pas 0.5)**
-Le seuil par defaut de 0.5 detecte seulement 65.1% des cancers malins.
-En abaissant le seuil a 0.367 (determine par analyse ROC), on detecte
-90.4% des malins au prix de quelques biopsies supplementaires.
-
-**Resultat affiche :**
-- Badge BENIN (vert) ou MALIN (rouge) avec animation
-- Pourcentage de confiance avec jauge animee
-- Temps d'inference en millisecondes
-- Seuil utilise (0.367)
-
-### F2 — Visualisation Grad-CAM
-
-**Qu'est-ce que Grad-CAM ?**
-Grad-CAM (Gradient-weighted Class Activation Mapping) est une technique
-d'interpretabilite qui produit une carte thermique (heatmap) montrant
-quelles zones de l'image ont le plus influence la decision du modele.
-
-**Comment ca marche dans app.py ?**
-1. Un hook forward sur `layer4[-1].conv3` capture les activations (7x7x2048)
-2. Un hook backward capture les gradients lors de la retropropagation
-3. Les poids = moyenne spatiale des gradients par canal
-4. CAM = ReLU(somme ponderee des activations par les poids)
-5. Interpolation bilineaire 7x7 → 224x224
-6. Colorisation COLORMAP_JET + superposition 60% image / 40% heatmap
-
-**Interpretation des couleurs :**
-```
-Bleu fonce   → Zone peu importante pour la decision
-Cyan/Vert    → Zone moyennement active
-Jaune/Orange → Zone importante
-Rouge vif    → Zone tres critique (determinante)
-```
-
-**Pourquoi c'est important ?**
-Sans Grad-CAM, le modele est une boite noire. Un medecin ne peut pas
-valider une decision qu'il ne comprend pas. Sur 4/5 images testees,
-les zones rouges correspondent aux noyaux cellulaires atypiques —
-les structures biologiquement pertinentes pour le diagnostic.
-
-### F3 — Rapport medical par LLM (Groq + Llama 3.1 70B)
-
-**Qu'est-ce que Groq ?**
-Groq est un service d'inference ultra-rapide pour les LLM (Large Language
-Models). Il donne acces au modele Llama 3.1 70B de Meta entierement
-gratuitement (15 requetes/minute, sans carte bancaire).
-
-**Pourquoi Groq plutot que Gemini ou OpenAI ?**
-- Gratuit sans limite stricte pour la recherche
-- Reponse en moins d'une seconde
-- Cle API courte (format gsk_xxx) — pas de probleme Windows CMD
-- Qualite medicale excellente avec Llama 3.1 70B
-
-**Structure du rapport genere :**
-1. Resultat de l'analyse IA et niveau de confiance
-2. Signification clinique du diagnostic
-3. Recommandation au medecin referent
-4. Avertissement medical obligatoire
-
-### F4 — Dashboard de performances
-
-Page dediee affichant :
-- 4 cartes metriques : AUC-ROC, Accuracy, Recall Malin, F1
-- Courbe ROC avec point seuil 0.5 et point optimal 0.367 annotés
-- Graphique K-Fold (5 folds) avec barres Accuracy + AUC
-- Matrice de confusion coloree (VP/VN/FP/FN)
-- Intervalles de confiance 95%
-
-### F5 — Historique et export CSV
-
-- Sauvegarde automatique dans `predictions.json` apres chaque analyse
-- Tableau pagine avec filtres Benin/Malin
-- Miniatures cliquables (image originale + heatmap)
-- Export CSV telechargeable
 
 ## Test et Validation
 
@@ -209,7 +64,7 @@ python app-final.py
 
 ```bash
 # Cloner et installer
-git clone https://github.com/awafaye16-ctl/breakhis-flask.git
+git clone https://github.com/awafaye16-ctl/BreaKHis-CNN_with_Flask_V2.git
 cd lafayette-medical-ai
 pip install -r requirements.txt
 ```
@@ -389,5 +244,3 @@ type .env
 **Développé avec PyTorch, Grad-CAM, Groq et détermination.**
 
 *awa.faye16@univ-thies.sn | github.com/awafaye16-ctl*
-#   B r e a K H i s - C N N _ w i t h _ F l a s k _ V 2  
- 
